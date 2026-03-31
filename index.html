@@ -20,7 +20,7 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         canvas {
             display: block;
@@ -37,16 +37,15 @@
 
         const nombreCompleto = "KERLY ANTONELLA TINEO RODRIGUEZ"; 
         const particles = [];
-        const particleCount = 400; 
         
-        let scale = Math.min(window.innerWidth, window.innerHeight) / 45;
-        let baseScale = scale;
-        let time = 0;
+        // Cantidad exacta para un flujo secuencial (ej. 300)
+        const particleCount = 300; 
 
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
         function getHeartPoint(t) {
+            // Ecuación suave ajustada (sin pico central)
             const x = 16 * Math.pow(Math.sin(t), 3);
             const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
             return { x: x, y: -y };
@@ -55,7 +54,7 @@
         class Particle {
             constructor(targetX, targetY, char) {
                 this.x = Math.random() * canvas.width;
-                this.y = -Math.random() * 800; 
+                this.y = -Math.random() * canvas.height; 
                 this.targetX = targetX;
                 this.targetY = targetY;
                 this.char = char;
@@ -76,21 +75,26 @@
 
             draw() {
                 ctx.fillStyle = `rgba(255, 0, 0, ${this.opacity})`;
-                ctx.font = "bold 16px Arial"; 
+                // Fuente Bold para que el nombre se lea claro
+                ctx.font = "bold 14px Segoe UI, sans-serif";
                 ctx.fillText(this.char, this.x, this.y);
             }
         }
 
         function init() {
-            scale = Math.min(canvas.width, canvas.height) / 45;
-            baseScale = scale;
-            const letters = nombreCompleto.replace(/\s/g, ''); 
+            const scale = Math.min(canvas.width, canvas.height) / 40;
+            
+            // Reemplaza múltiples espacios por uno solo y limpia bordes
+            const cleanName = nombreCompleto.replace(/\s+/g, ' ').trim(); 
 
             for (let i = 0; i < particleCount; i++) {
-                const t = Math.random() * Math.PI * 2;
+                // Distribución secuencial exacta (no aleatoria)
+                const t = (i / particleCount) * Math.PI * 2;
                 
                 const point = getHeartPoint(t);
-                const char = letters.charAt(i % letters.length); 
+                
+                // Ciclar ordenadamente por el nombre completo
+                const char = cleanName.charAt(i % cleanName.length); 
                 
                 const targetX = canvas.width / 2 + point.x * scale;
                 const targetY = canvas.height / 2 + point.y * scale;
@@ -102,21 +106,8 @@
         function animate() {
             ctx.fillStyle = 'black';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-
             
-            time += 0.05;
-            scale = baseScale + Math.sin(time) * 0.5;
-            
-            particles.forEach((p, index) => {
-                const t = Math.random() * Math.PI * 2; 
-                const point = getHeartPoint(t);
-
-                
-                if (p.y >= p.targetY - 5) { 
-                    p.targetX = canvas.width / 2 + point.x * scale;
-                    p.targetY = canvas.height / 2 + point.y * scale;
-                }
-
+            particles.forEach(p => {
                 p.update();
                 p.draw();
             });
